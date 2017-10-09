@@ -1,15 +1,15 @@
 var bigInt = require("big-integer");
 
 //Generamos todos los valores cuando se arranca el servidor
-var p = bigInt.randBetween("1000000000", "9999999999");
-var q = bigInt.randBetween("1000000000", "9999999999");
+var p = bigInt.randBetween("1e50", "9e50");
+var q = bigInt.randBetween("1e50", "9e50");
 
 while (!bigInt(p).isPrime()){
-    p = bigInt.randBetween("1000000000", "9999999999");
+    p = bigInt.randBetween("1e50", "9e50");
 }
 
 while (!bigInt(q).isPrime()){
-    q = bigInt.randBetween("1000000000", "9999999999");
+    q = bigInt.randBetween("1e50", "9e50");
 }
 
 //n = p·q y phiN es (p-1)(q-1)
@@ -17,34 +17,35 @@ var n = bigInt(p).multiply(q);
 var phiN = bigInt(bigInt(p).prev()).multiply(bigInt(q).prev());
 
 //Random menor que Phi de N
-var e = bigInt.randBetween("10000000000", bigInt(phiN));
+var e = bigInt.randBetween("1e90", bigInt(phiN));
 
 //Mientras e no sea primo y coprimo de phiN lo volvemos a generar
 while ((!bigInt(e).isPrime())&&(bigInt.lcm(e, phiN) != 1)){
-    e = bigInt.randBetween("10000000000", bigInt(phiN));
+    e = bigInt.randBetween("1e90", bigInt(phiN));
 }
 
 //d (exponente privado) tiene que ser el multiplicador inverso de e mod phiN
 var d = bigInt(e).modInv(phiN);
 
-//GET - Return all tvshows in the DB
+//GET - Return Public Key
 exports.publicKey = function(req, res) {
         console.log('GET /pukey');
-        res.status(200).jsonp("e = "+e + "; n = " + n);
+        res.status(200).send(JSON.stringify({ e: e, n: n }));
 };
 
+//Get - Reset Keys
 exports.redoKey = function(req, res) {
     console.log('GET /redoKey');
 
-    p = bigInt.randBetween("1000000000", "9999999999");
-    q = bigInt.randBetween("1000000000", "9999999999");
+    p = bigInt.randBetween("1e50", "9e50");
+    q = bigInt.randBetween("1e50", "9e50");
 
     while (!bigInt(p).isPrime()){
-        p = bigInt.randBetween("1000000000", "9999999999");
+        p = bigInt.randBetween("1e50", "9e50");
     }
 
     while (!bigInt(q).isPrime()){
-        q = bigInt.randBetween("1000000000", "9999999999");
+        q = bigInt.randBetween("1e50", "9e50");
     }
 
 //n = p·q y phiN es (p-1)(q-1)
@@ -52,11 +53,11 @@ exports.redoKey = function(req, res) {
     phiN = bigInt(bigInt(p).prev()).multiply(bigInt(q).prev());
 
 //Random menor que Phi de N
-    e = bigInt.randBetween("10000000000", bigInt(phiN));
+    e = bigInt.randBetween("1e90", bigInt(phiN));
 
 //Mientras e no sea primo y coprimo de phiN lo volvemos a generar
     while ((!bigInt(e).isPrime())&&(bigInt.lcm(e, phiN) != 1)){
-        e = bigInt.randBetween("10000000000", bigInt(phiN));
+        e = bigInt.randBetween("1e90", bigInt(phiN));
     }
 
 //d (exponente privado) tiene que ser el multiplicador inverso de e mod phiN
@@ -64,25 +65,17 @@ exports.redoKey = function(req, res) {
     res.status(200).jsonp("Las claves se han generado de nuevo");
 };
 
-/*
+
 //POST - Insert a new Student in the DB
-exports.addStudent = function(req, res) {
+exports.sendMensaje = function(req, res) {
     console.log('POST');
     console.log(req.body);
-
-    var student = new Student({
-        nombre:    req.body.nombre,
-        apellido: 	  req.body.apellido,
-        edad:  req.body.edad,
-        genero:   req.body.genero
-    });
-
-    student.save(function(err, student) {
-        if(err) return res.status(500).send( err.message);
-        res.status(200).jsonp(student);
-    });
+    var decipher = bigInt(req.body.cipher).modPow(d, n);
+    console.log(decipher.value);
+    res.status(200).jsonp("Mensaje recibido");
 };
 
+/*
 //PUT - Update a register already exists
 exports.updateStudent = function(req, res) {
     Student.findById(req.params.id, function(err, student) {

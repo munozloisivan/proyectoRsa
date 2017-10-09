@@ -3,24 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Angular Students</title>
+    <title>Test RSA</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
+    <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
     <script>
 
         var app = angular.module('RSA', []);
 
         app.controller('mainController', function($scope, $http) {
+
             $http.get("/rsa/pukey").success(function(response) {
                 $scope.expE = response.e;
-                $scope.monN = response.n;
-                });
+                $scope.modN = response.n;
+            });
 
             $scope.redoKey = function () {
                 $http.get("/rsa/redokey").success(function (response) {
                 alert(response);
+                    $http.get("/rsa/pukey").success(function(response) {
+                        $scope.expE = response.e;
+                        $scope.modN = response.n;
+                    });
                 })
+            }
+
+            $scope.send = function () {
+                var input = $scope.mensaje;
+                var cipher = bigInt(input).modPow($scope.expE, $scope.modN);
+                var data = JSON.stringify({"cipher": cipher});
+                $http.post("/rsa/send", data)
+                    .success(function (response) {
+                        alert(response);
+                    })
             }
         });
 
@@ -32,14 +48,19 @@
 <div class="container-fluid">
     <!--Cabecera-->
     <div class="jumbotron text-center">
-        <h1>Clave pública ( e = {{ expE }} , n = {{ modN }} )</h1>
-    </div>
+        <h3>Clave pública</h3>
+        <h4>Exponente público (e) = {{ expE }}</h4>
+        <h4>Módulo (n) = {{ modN }}</h4>
+        <button type="button" class="btn btn-danger" ng-click = "redoKey()">Restaurar claves</button>
+</div>
 </div>
 
 <div class="container-fluid col-md-12" style="margin: 0 auto;">
-        <div class="col col-md-6">
-            <button type="button" class="btn btn-default" ng-click = "redoKey">Restaurar claves</button>
-        </div>
+    <form ng-submit = "send()">
+        <label>Mensaje:</label>
+        <input style="width: 100%;" ng-model="mensaje" required>
+        <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar</button>
+    </form>
 </div>
 
 </body>

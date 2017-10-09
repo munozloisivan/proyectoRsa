@@ -3,6 +3,7 @@ var express = require("express"),
     app = express(),
     bodyParser  = require("body-parser"),
     methodOverride = require("method-override");
+var path = require('path');
 
 //Utils extra
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -15,7 +16,7 @@ var RSACtrl = require('./controllers/RSA.js');
 // Carga una vista HTML simple donde irá nuestra Single App Page
 // Angular Manejará el Frontend
 app.get('/', function(req, res) {
-    res.sendfile('./public/index.html')
+    res.sendFile(path.join(__dirname + '/public/index.html'));
 });
 
 //Example Route
@@ -31,6 +32,8 @@ app.use('/rsa', rsa);
 
 rsa.route('/pukey').get(RSACtrl.publicKey);
 rsa.route('/redokey').get(RSACtrl.redoKey);
+
+rsa.route('/send').post(RSACtrl.sendMensaje);
 
 
 /*students.route('/students/:id')
