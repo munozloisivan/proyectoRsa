@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" ng-app="angularStudents">
+<html lang="en" ng-app="RSA">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,22 +9,18 @@
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script>
 
-        var app = angular.module('angularStudents', []);
+        var app = angular.module('RSA', []);
 
         app.controller('mainController', function($scope, $http) {
-            $http.get("/api/students").success(function(response) {
-                $scope.howmany = response.length;
-                $scope.students = response;
+            $http.get("/rsa/pukey").success(function(response) {
+                $scope.expE = response.e;
+                $scope.monN = response.n;
                 });
 
-            $scope.PostForm = function () {
-                var data = JSON.stringify({"nombre": $scope.registro.nombre, "apellido": $scope.registro.apellido,
-                "edad": $scope.registro.edad, "genero":$scope.registro.genero});
-                alert(data);
-                $http.post("/api/students", data)
-                    .success(function () {
-                        alert("Registrado");
-                    })
+            $scope.redoKey = function () {
+                $http.get("/rsa/redokey").success(function (response) {
+                alert(response);
+                })
             }
         });
 
@@ -36,59 +32,15 @@
 <div class="container-fluid">
     <!--Cabecera-->
     <div class="jumbotron text-center">
-        <h1>Hay {{ howmany }} estudiantes registrados</h1>
+        <h1>Clave pública ( e = {{ expE }} , n = {{ modN }} )</h1>
     </div>
 </div>
 
 <div class="container-fluid col-md-12" style="margin: 0 auto;">
         <div class="col col-md-6">
-            <form ng-submit="PostForm()">
-                <div class="form-group">
-                    <label for="nombre">Nombre:</label>
-                    <input type="text" class="form-control" id="nombre" ng-model="registro.nombre" required>
-                </div>
-                <div class="form-group">
-                    <label for="apellido">Apellido:</label>
-                    <input type="text" class="form-control" id="apellido" ng-model="registro.apellido" required>
-                </div>
-                <div class="form-group">
-                    <label for="edad">Edad:</label>
-                    <input type="number" class="form-control" id="edad" ng-model="registro.edad" required>
-                </div>
-                <div class="form-group">
-                    <label>Genero:</label>
-                    <select ng-model="registro.genero" required>
-                        <option value="">Seleccionar</option>
-                        <option value="Hombre">Hombre</option>
-                        <option value="Mujer">Mujer</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-default">Añadir</button>
-            </form>
-        </div>
-
-        <div class="col col-md-6">
-            <table class="table table-striped">
-                <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Apellido</th>
-                    <th>Edad</th>
-                    <th>Género</th>
-                </tr>
-                </thead>
-                <tbody ng-repeat="i in students">
-                <tr>
-                    <td>{{i.nombre}}</td>
-                    <td>{{i.apellido}}</td>
-                    <td>{{i.edad}}</td>
-                    <td>{{i.genero}}</td>
-                </tr>
-                </tbody>
-            </table>
+            <button type="button" class="btn btn-default" ng-click = "redoKey">Restaurar claves</button>
         </div>
 </div>
-
 
 </body>
 </html>
