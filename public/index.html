@@ -30,13 +30,25 @@
             }
 
             $scope.send = function () {
-                var input = $scope.mensaje;
-                var cipher = bigInt(input).modPow($scope.expE, $scope.modN);
+                console.log("Mensaje: " + $scope.mensaje);
+                var input = String2Hex($scope.mensaje);
+                console.log("Hexa: " + input);
+                var bnumber = bigInt(input, 16);
+                console.log("big int del hexa: " + bnumber);
+                var cipher = bigInt(bnumber).modPow($scope.expE, $scope.modN).toString();
                 var data = JSON.stringify({"cipher": cipher});
                 $http.post("/rsa/send", data)
                     .success(function (response) {
                         alert(response);
                     })
+            }
+
+            function String2Hex(tmp) {
+                var str = '';
+                for(var i = 0; i < tmp.length; i++) {
+                    str += tmp[i].charCodeAt(0).toString(16);
+                }
+                return str;
             }
         });
 

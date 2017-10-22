@@ -1,15 +1,17 @@
 var bigInt = require("big-integer");
 
 //Generamos todos los valores cuando se arranca el servidor
-var p = bigInt.randBetween("1e50", "9e50");
-var q = bigInt.randBetween("1e50", "9e50");
+var length = 512;
+
+var p = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
+var q = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
 
 while (!bigInt(p).isPrime()){
-    p = bigInt.randBetween("1e50", "9e50");
+    p = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
 }
 
 while (!bigInt(q).isPrime()){
-    q = bigInt.randBetween("1e50", "9e50");
+    q = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
 }
 
 //n = p·q y phiN es (p-1)(q-1)
@@ -37,15 +39,15 @@ exports.publicKey = function(req, res) {
 exports.redoKey = function(req, res) {
     console.log('GET /redoKey');
 
-    p = bigInt.randBetween("1e50", "9e50");
-    q = bigInt.randBetween("1e50", "9e50");
+    p = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
+    q = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
 
     while (!bigInt(p).isPrime()){
-        p = bigInt.randBetween("1e50", "9e50");
+        p = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
     }
 
     while (!bigInt(q).isPrime()){
-        q = bigInt.randBetween("1e50", "9e50");
+        q = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
     }
 
 //n = p·q y phiN es (p-1)(q-1)
@@ -71,10 +73,22 @@ exports.sendMensaje = function(req, res) {
     console.log('POST');
     console.log(req.body);
     var decipher = bigInt(req.body.cipher).modPow(d, n);
-    console.log(decipher.value);
+    var msj = decipher.toString(16);
+    console.log(decipher.toString());
+    console.log(msj);
+    console.log(hex_to_ascii(msj));
     res.status(200).jsonp("Mensaje recibido");
 };
 
+function hex_to_ascii(str1)
+{
+    var hex  = str1.toString();
+    var str = '';
+    for (var n = 0; n < hex.length; n += 2) {
+        str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+    }
+    return str;
+}
 /*
 //PUT - Update a register already exists
 exports.updateStudent = function(req, res) {
