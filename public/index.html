@@ -9,6 +9,10 @@
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
     <script>
+        $(document).ready (function(){
+            $("#success-alert").hide();
+            $("#changekey-alert").hide();
+        });
 
         var app = angular.module('RSA', []);
 
@@ -21,7 +25,10 @@
 
             $scope.redoKey = function () {
                 $http.get("/rsa/redokey").success(function (response) {
-                alert(response);
+                    $scope.change_status = response;
+                    $("#changekey-alert").fadeTo(2000, 500).slideUp(500, function(){
+                        $("#changekey-alert").slideUp(500);
+                    });
                     $http.get("/rsa/pukey").success(function(response) {
                         $scope.expE = response.e;
                         $scope.modN = response.n;
@@ -39,7 +46,9 @@
                 var data = JSON.stringify({"cipher": cipher});
                 $http.post("/rsa/send", data)
                     .success(function (response) {
-                        alert(response);
+                        $("#success-alert").fadeTo(2000, 500).slideUp(500, function(){
+                            $("#success-alert").slideUp(500);
+                        });
                     })
             }
 
@@ -68,11 +77,23 @@
 </div>
 
 <div class="container-fluid col-md-12" style="margin: 0 auto;">
-    <form ng-submit = "send()">
-        <label>Mensaje:</label>
-        <input style="width: 100%;" ng-model="mensaje" required>
-        <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar</button>
-    </form>
+
+    <div class="container-fluid col-md-6">
+        <form ng-submit = "send()">
+            <label>Mensaje:</label>
+            <input style="width: 100%;" ng-model="mensaje" required>
+            <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar</button>
+        </form>
+    </div>
+
+    <div class="container-fluid col-md-6">
+        <div class="alert alert-success" id="success-alert" style="margin-top: 20px;">
+            <strong>Mensaje envíado al servidor con éxito</strong>
+        </div>
+        <div class="alert alert-info" id="changekey-alert" style="margin-top: 20px;">
+            <strong>{{change_status}}</strong>
+        </div>
+    </div>
 </div>
 
 </body>
