@@ -15,20 +15,27 @@ exports.publicKey = function(req, res) {
 exports.redoKey = function(req, res) {
     console.log('GET /redoKey');
     generateKeys();
-    res.status(200).jsonp("Las claves se han generado de nuevo");
+    res.status(200).jsonp({'status': "Las claves se han generado de nuevo"});
 };
 
 
 //POST - Insert a new Student in the DB
 exports.sendMensaje = function(req, res) {
-    console.log('POST');
+    console.log('Descifrar');
     console.log(req.body);
     var decipher = bigInt(req.body.cipher).modPow(d, n);
     var msj = decipher.toString(16);
-    console.log(decipher.toString());
-    console.log(msj);
-    console.log(hex_to_ascii(msj));
-    res.status(200).jsonp("Mensaje recibido");
+    console.log("Descifrado big-integer: " + decipher.toString());
+    console.log("Mensaje original: " + hex_to_ascii(msj));
+    res.status(200).jsonp({'status': "Mensaje recibido"});
+};
+
+exports.signMensaje = function(req, res) {
+    console.log('Firmar');
+    console.log(req.body);
+    var signed = bigInt(req.body.blinded).modPow(d, n);
+    console.log("Mensaje firmado: " + signed.toString());
+    res.status(200).jsonp({"signed": signed, 'status': "Mensaje firmado"});
 };
 
 function hex_to_ascii(str1)
