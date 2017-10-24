@@ -19,7 +19,7 @@ exports.redoKey = function(req, res) {
 };
 
 
-//POST - Insert a new Student in the DB
+//POST - Enviar y desencriptar mensaje
 exports.sendMensaje = function(req, res) {
     console.log('Descifrar');
     console.log(req.body);
@@ -30,6 +30,7 @@ exports.sendMensaje = function(req, res) {
     res.status(200).jsonp({'status': "Mensaje recibido"});
 };
 
+//POST - Enviar y firmar mensaje
 exports.signMensaje = function(req, res) {
     console.log('Firmar');
     console.log(req.body);
