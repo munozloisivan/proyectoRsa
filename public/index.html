@@ -9,6 +9,8 @@
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
     <script>
+
+
         $(document).ready (function(){
             $("#success-alert").hide();
             $("#changekey-alert").hide();
@@ -19,9 +21,13 @@
 
         app.controller('mainController', function($scope, $http) {
 
+            var id_o = "Cliente";
+            var id_d;
+
             $http.get("/rsa/pukey").success(function(response) {
                 $scope.expE = response.e;
                 $scope.modN = response.n;
+                id_d = response.id;
             });
 
             $scope.redoKey = function () {
@@ -33,6 +39,7 @@
                     $http.get("/rsa/pukey").success(function(response) {
                         $scope.expE = response.e;
                         $scope.modN = response.n;
+                        id_d = response.id;
                     });
                 })
             }
@@ -45,8 +52,10 @@
                 var bnumber = bigInt(input, 16);
                 console.log("Big-int del hexa: " + bnumber);
                 var cipher = bigInt(bnumber).modPow($scope.expE, $scope.modN).toString();
-                var data = JSON.stringify({"cipher": cipher});
-                    $http.post("/rsa/send", data)
+                var data = JSON.stringify({"A": id_o, "B": id_d, "cipher": cipher});
+                var prueba = CryptoJS.SHA256(data);
+                var data2 = JSON.stringify({"A": id_o, "B": id_d, "cipher": cipher, "Po": prueba});
+                    $http.post("/rsa/send", data2)
                         .success(function (response) {
                             $scope.send_status = response.status;
                             $("#success-alert").fadeTo(3000, 500).slideUp(500, function(){

@@ -1,6 +1,7 @@
 var bigInt = require("big-integer");
 //Generamos todos los valores cuando se arranca el servidor
 var length = 512;
+var id_server = "Servidor";
 var p, q, n, phiN, e, d;
 
 generateKeys();
@@ -8,7 +9,7 @@ generateKeys();
 //GET - Return Public Key
 exports.publicKey = function(req, res) {
         console.log('GET /pukey');
-        res.status(200).send(JSON.stringify({ e: e, n: n }));
+        res.status(200).send(JSON.stringify({ e: e, n: n, id: id_server }));
 };
 
 //Get - Reset Keys
