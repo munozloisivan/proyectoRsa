@@ -2,10 +2,12 @@
   "name": "node-api-rest-example",
   "version": "2.0.0",
   "dependencies": {
-    "mongoose": "~3.6.11",
+    "big-integer": "^1.6.25",
+    "body-parser": "^1.5.1",
+    "bower": "^1.8.2",
     "express": "^4.7.1",
     "method-override": "^2.1.2",
-    "body-parser": "^1.5.1",
-    "big-integer": "^1.6.25"
+    "mongoose": "~3.6.11",
+    "object-hash": "^1.2.0"
   }
 }

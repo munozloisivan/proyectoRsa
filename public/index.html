@@ -8,6 +8,10 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
+    <script src="http://crypto-js.googlecode.com/svn/tags/3.1/build/rollups/sha256.js"></script>
+    <script>
+        var hash = CryptoJS.SHA256("Message");
+    </script>
     <script>
 
 
@@ -15,6 +19,10 @@
             $("#success-alert").hide();
             $("#changekey-alert").hide();
             $("#sign-alert").hide();
+
+            var hash = CryptoJS.MD5("Message");
+
+            console.log(hash);
         });
 
         var app = angular.module('RSA', []);
@@ -52,10 +60,9 @@
                 var bnumber = bigInt(input, 16);
                 console.log("Big-int del hexa: " + bnumber);
                 var cipher = bigInt(bnumber).modPow($scope.expE, $scope.modN).toString();
-                var data = JSON.stringify({"A": id_o, "B": id_d, "cipher": cipher});
-                var prueba = CryptoJS.SHA256(data);
-                var data2 = JSON.stringify({"A": id_o, "B": id_d, "cipher": cipher, "Po": prueba});
-                    $http.post("/rsa/send", data2)
+                var dataObj = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}]);
+                var data = JSON.stringify(dataObj);
+                    $http.post("/rsa/send", data)
                         .success(function (response) {
                             $scope.send_status = response.status;
                             $("#success-alert").fadeTo(3000, 500).slideUp(500, function(){
@@ -79,24 +86,26 @@
                 console.log("Big-int del hexadecimal: " + bnumber);
                 var blinded = ((bigInt(bnumber).multiply(blinder_factor)).mod($scope.modN)).toString();
                 console.log("Blinded: " + blinded);
-                var data = JSON.stringify({"blinded": blinded});
+                var dataObj = ([{"A": id_o}, {"B": id_d}, {"blinded": blinded}]);
+                var data = JSON.stringify(dataObj);
                     $http.post("/rsa/sign", data)
                         .success(function (response) {
-                            $scope.sign_status = response.status;
+                            $scope.sign_status = response[3].status;
                             $("#sign-alert").fadeTo(3000, 500).slideUp(500, function(){
                                 $("#sign-alert").slideUp(500);
                             });
-                            $scope.signed_msg_blind = response.signed;
-                            console.log("Firmado cegado: " +response.signed);
+                            $scope.signed_msg_blind = response[2].signed;
+                            console.log("Firmado cegado: " + response[2].signed);
                             var signed_final_blind = bigInt($scope.signed_msg_blind);
                             var signed_final = (bigInt(signed_final_blind).multiply(b_inv)).mod($scope.modN);
-                            console.log("Firmado: " +signed_final.toString());
+                            console.log("Firmado: " + signed_final.toString());
                             $scope.signed_msg = signed_final.toString();
                             var probe_hexa = bigInt(signed_final).modPow($scope.expE, $scope.modN);
                             var probe = hex_to_ascii(probe_hexa.toString(16));
-                            console.log("Comprobación: " +probe);
+                            console.log(response);
+                            console.log("Comprobación: " + probe);
                         })
-            }
+            };
 
             function String2Hex(tmp) {
                 var str = '';

@@ -2,6 +2,7 @@ var bigInt = require("big-integer");
 //Generamos todos los valores cuando se arranca el servidor
 var length = 512;
 var id_server = "Servidor";
+var id_client;
 var p, q, n, phiN, e, d;
 
 generateKeys();
@@ -24,6 +25,7 @@ exports.redoKey = function(req, res) {
 exports.sendMensaje = function(req, res) {
     console.log('Descifrar');
     console.log(req.body);
+    id_client = req.body.A;
     var decipher = bigInt(req.body.cipher).modPow(d, n);
     var msj = decipher.toString(16);
     console.log("Descifrado big-integer: " + decipher.toString());
@@ -35,9 +37,11 @@ exports.sendMensaje = function(req, res) {
 exports.signMensaje = function(req, res) {
     console.log('Firmar');
     console.log(req.body);
-    var signed = bigInt(req.body.blinded).modPow(d, n);
+    id_client = req.body[0].A;
+    var signed = bigInt(req.body[2].blinded).modPow(d, n);
     console.log("Mensaje firmado: " + signed.toString());
-    res.status(200).jsonp({"signed": signed, 'status': "Mensaje firmado"});
+    var dataObj = ([{"B": id_server}, {"A": id_client}, {"signed": signed}, {'status': "Mensaje firmado"}]);
+    res.status(200).jsonp(dataObj);
 };
 
 function hex_to_ascii(str1)
