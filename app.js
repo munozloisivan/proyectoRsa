@@ -9,6 +9,7 @@ var path = require('path');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOverride());
+app.use(express.static('public'));
 
 //Controllers y modelos
 var RSACtrl = require('./controllers/RSA.js');

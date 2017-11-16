@@ -1,4 +1,5 @@
 var bigInt = require("big-integer");
+var SHA256 = require("crypto-js/sha256");
 //Generamos todos los valores cuando se arranca el servidor
 var length = 512;
 var id_server = "Servidor";
@@ -27,6 +28,7 @@ exports.sendMensaje = function(req, res) {
     console.log(req.body);
     id_client = req.body[0].A;
     var decipher = bigInt(req.body[2].cipher).modPow(d, n);
+    var msghash = req.body[3];
     var msj = decipher.toString(16);
     console.log("Descifrado big-integer: " + decipher.toString());
     console.log("Mensaje original: " + hex_to_ascii(msj));

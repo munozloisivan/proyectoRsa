@@ -8,10 +8,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
-    <script src="http://crypto-js.googlecode.com/svn/tags/3.1/build/rollups/sha256.js"></script>
-    <script>
-        var hash = CryptoJS.SHA256("Message");
-    </script>
+    <script src="/crypto-js/crypto-js.js"></script>
     <script>
 
 
@@ -19,10 +16,6 @@
             $("#success-alert").hide();
             $("#changekey-alert").hide();
             $("#sign-alert").hide();
-
-            var hash = CryptoJS.MD5("Message");
-
-            console.log(hash);
         });
 
         var app = angular.module('RSA', []);
@@ -62,10 +55,11 @@
                 var cipher = bigInt(bnumber).modPow($scope.expE, $scope.modN).toString();
                 var dataObj = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}]);
 
-                var po; //Hash de dataObj
-                var enviar; //dataobject + po
+                var po = CryptoJS.SHA256(JSON.stringify(dataObj)).toString(CryptoJS.enc.Hex);
+                console.log(po);
+                var enviar = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}, {"Po": po}]);
 
-                var data = JSON.stringify(dataObj);
+                var data = JSON.stringify(enviar);
                     $http.post("/rsa/send", data)
                         .success(function (response) {
                             $scope.send_status = response.status;
