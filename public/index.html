@@ -61,6 +61,10 @@
                 console.log("Big-int del hexa: " + bnumber);
                 var cipher = bigInt(bnumber).modPow($scope.expE, $scope.modN).toString();
                 var dataObj = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}]);
+
+                var po; //Hash de dataObj
+                var enviar; //dataobject + po
+
                 var data = JSON.stringify(dataObj);
                     $http.post("/rsa/send", data)
                         .success(function (response) {

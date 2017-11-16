@@ -25,8 +25,8 @@ exports.redoKey = function(req, res) {
 exports.sendMensaje = function(req, res) {
     console.log('Descifrar');
     console.log(req.body);
-    id_client = req.body.A;
-    var decipher = bigInt(req.body.cipher).modPow(d, n);
+    id_client = req.body[0].A;
+    var decipher = bigInt(req.body[2].cipher).modPow(d, n);
     var msj = decipher.toString(16);
     console.log("Descifrado big-integer: " + decipher.toString());
     console.log("Mensaje original: " + hex_to_ascii(msj));
