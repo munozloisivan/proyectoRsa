@@ -129,6 +129,26 @@
                         })
             };
 
+            /*$scope.sendSuma = function () {
+
+                console.log("Vivienda A: " + $scope.va);
+                console.log("Vivienda B: " + $scope.vb);
+                console.log("Vivienda C: " + $scope.vc);
+                console.log("Vivienda D: " + $scope.vd);
+
+                var vvA = CryptoJS.AES($scope.va).toString(CryptoJS.enc.Hex);
+
+                var keys = ({"e": e , "n": n});
+                var data = JSON.stringify(keys);
+                console.log("data: " + data);
+                $http.post("/rsa/webkeys", data).success(function (response) {
+                    $scope.send_status = response.status;
+                    $("#success-alert").fadeTo(3000, 500).slideUp(500, function(){
+                        $("#success-alert").slideUp(500);
+                    });
+                })
+            }*/
+
             function String2Hex(tmp) {
                 var str = '';
                 for(var i = 0; i < tmp.length; i++) {
@@ -230,6 +250,20 @@
             <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar para firmar</button>
         </form>
     </div>
+
+    <!--<div class="container-fluid col-md-6" style="background-color: #d7d7c1; padding: 20px; border-radius: 20px">
+        <form ng-submit = "sendSuma()">
+            <label>Vivienda A:</label>
+            <input style="width: 100%;" ng-model="va" required>
+            <label>Vivienda B:</label>
+            <input style="width: 100%;" ng-model="vb" required>
+            <label>Vivienda C:</label>
+            <input style="width: 100%;" ng-model="vc" required>
+            <label>Vivienda D:</label>
+            <input style="width: 100%;" ng-model="vd" required>
+            <button style="margin-top: 10px" type="submit" class="btn btn-primary">Enviar suma</button>
+        </form>
+    </div>!-->
 
     <div class="container-fluid col-md-12" style="padding: 20px; border-radius: 20px">
         <h3>Mensaje firmado cegado:</h3>
