@@ -37,6 +37,8 @@ rsa.route('/redokey').get(RSACtrl.redoKey);
 rsa.route('/send').post(RSACtrl.sendMensaje);
 rsa.route('/sign').post(RSACtrl.signMensaje);
 rsa.route('/webkeys').post(RSACtrl.webKeys);
+rsa.route('/sendsecret').post(RSACtrl.sendSecret);
+rsa.route('/getsecret').post(RSACtrl.getSecret);
 
 
 /*students.route('/students/:id')

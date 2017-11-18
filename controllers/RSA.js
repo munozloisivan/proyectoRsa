@@ -1,12 +1,14 @@
 var bigInt = require("big-integer");
 var CryptoJS = require("crypto-js");
 var SHA256 = require("crypto-js/sha256");
+var secrets = require('secrets.js');
 //Generamos todos los valores cuando se arranca el servidor
 var length = 512;
 var id_server = "Servidor";
 var id_client;
 var p, q, n, phiN, e, d;
 var e_client, n_client;
+var secret, s1, s2, s3;
 
 generateKeys();
 
@@ -20,7 +22,7 @@ exports.publicKey = function(req, res) {
 exports.redoKey = function(req, res) {
     console.log('GET /redoKey');
     generateKeys();
-    res.status(200).jsonp({'status': "Las claves se han generado de nuevo"});
+    res.status(200).jsonp({'status': "Las claves del servidor se han generado de nuevo"});
 };
 
 //POST - Recibir claves del cliente
@@ -29,6 +31,64 @@ exports.webKeys = function(req, res) {
     console.log(req.body);
     e_client = req.body.e;
     n_client = req.body.n;
+    res.status(200).jsonp({'status': "Las claves del cliente se han generado y enviado de nuevo"});
+}
+
+//POST - Recibir secreto
+exports.sendSecret = function(req, res) {
+    console.log('Secreto');
+    console.log(req.body);
+    id_client = req.body[0].A;
+    var decipher = bigInt(req.body[2].cipher).modPow(d, n);
+    secret = decipher.toString(16);
+    console.log("Mensaje original: " + hex_to_ascii(secret));
+
+    var shares = secrets.share(secret, 3, 3, 16);
+    s1 = shares[0];
+    s2 = shares[1];
+    s3 = shares[2];
+    console.log('Secret_1: ' + s1);
+    console.log('Secret_2: ' + s2);
+    console.log('Secret_3: ' + s3);
+
+    res.status(200).jsonp({'status': "Secreto guardado. Su clave es: " + s1});
+
+    /*var comb = secrets.combine( [ s1, s2, s3 ] );
+    var strcomb = secrets.hex2str(comb);
+    console.log('Strcomb: ' + strcomb);
+    console.log('Comb: ' + comb);
+    console.log('Asciicomb: ' + hex_to_ascii(comb));
+    console.log('Secret: ' + secret);
+    console.log( comb === secret  ); // => true*/
+
+}
+
+//POST - Comprobar secreto
+exports.getSecret = function(req, res) {
+    console.log('Secret parts');
+    console.log(req.body);
+    id_client = req.body[0].A;
+    var deciphs1 = bigInt(req.body[2].ciphs1).modPow(d, n);
+    var deciphs2 = bigInt(req.body[3].ciphs2).modPow(d, n);
+    var deciphs3 = bigInt(req.body[4].ciphs3).modPow(d, n);
+    var rs1= deciphs1.toString(16);
+    var rs2= deciphs2.toString(16);
+    var rs3= deciphs3.toString(16);
+    console.log('Secret_p1: ' + rs1);
+    console.log('Secret_p2: ' + rs2);
+    console.log('Secret_p3: ' + rs3);
+
+    var comb = secrets.combine( [ rs1, rs2, rs3 ] );
+    var ascii_comb = hex_to_ascii(comb);
+    console.log('Asci_comb: ' + ascii_comb);
+    console.log( comb === secret  ); // => true
+    if ( comb === secret  ) {
+        res.status(200).jsonp({'status': "Claves secretas correctas. El secreto es: " + ascii_comb});
+    }
+    else {
+        res.status(200).jsonp({'status': "Claves secretas incorrectas"});
+    }
+
 }
 
 //POST - Enviar y desencriptar mensaje

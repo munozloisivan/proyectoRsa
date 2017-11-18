@@ -9,6 +9,7 @@
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
     <script src="/crypto-js/crypto-js.js"></script>
+    <script src="/secrets-js/secrets.js"></script>
     <script>
 
 
@@ -16,6 +17,9 @@
             $("#success-alert").hide();
             $("#changekey-alert").hide();
             $("#sign-alert").hide();
+            $("#sendsecret-alert").hide();
+            $("#getsecret-alert").hide();
+            $("#changeCkey-alert").hide();
         });
 
         var app = angular.module('RSA', []);
@@ -34,6 +38,45 @@
                 id_d = response.id;
             });
 
+            $scope.sendSecret = function () {
+                console.log("SECRET");
+                console.log("Secreto: " + $scope.secret);
+                var hexasecret = String2Hex($scope.secret);
+                var numsecret = bigInt(hexasecret, 16);
+                var cipher = bigInt(numsecret).modPow($scope.expE, $scope.modN).toString();
+                var dataObj = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}]);
+                var data = JSON.stringify(dataObj);
+                $http.post("/rsa/sendsecret", data)
+                    .success(function (response) {
+                        $scope.sendsecret_status = response.status;
+                        $("#sendsecret-alert").fadeTo(3000, 500).slideUp(500, function(){
+                            $("#sendsecret-alert").slideUp(500);
+                        });
+                    })
+            }
+
+            $scope.getSecret = function () {
+                console.log("SECRET PARTS");
+                console.log("Secret part 1: " + $scope.s1);
+                console.log("Secret part 2: " + $scope.s2);
+                console.log("Secret part 3: " + $scope.s3);
+                var nums1 = bigInt($scope.s1, 16);
+                var nums2 = bigInt($scope.s2, 16);
+                var nums3 = bigInt($scope.s3, 16);
+                var ciphs1 = bigInt(nums1).modPow($scope.expE, $scope.modN).toString();
+                var ciphs2 = bigInt(nums2).modPow($scope.expE, $scope.modN).toString();
+                var ciphs3 = bigInt(nums3).modPow($scope.expE, $scope.modN).toString();
+                var dataObj = ([{"A": id_o}, {"B": id_d}, {"ciphs1": ciphs1}, {"ciphs2": ciphs2}, {"ciphs3": ciphs3}]);
+                var data = JSON.stringify(dataObj);
+                $http.post("/rsa/getsecret", data)
+                    .success(function (response) {
+                        $scope.getsecret_status = response.status;
+                        $("#getsecret-alert").fadeTo(3000, 500).slideUp(500, function(){
+                            $("#getsecret-alert").slideUp(500);
+                        });
+                    })
+            }
+
             $scope.createKeysweb = function () {
                 generateKeys();
                 console.log("e: " + e);
@@ -44,9 +87,9 @@
                 var data = JSON.stringify(keys);
                 console.log("data: " + data);
                 $http.post("/rsa/webkeys", data).success(function (response) {
-                        $scope.send_status = response.status;
-                        $("#success-alert").fadeTo(3000, 500).slideUp(500, function(){
-                            $("#success-alert").slideUp(500);
+                        $scope.changeCkey_status = response.status;
+                        $("#changeCkey-alert").fadeTo(3000, 500).slideUp(500, function(){
+                            $("#changeCkey-alert").slideUp(500);
                         });
                     })
             }
@@ -230,8 +273,17 @@
     <div class="alert alert-info" id="changekey-alert" style="margin-top: 20px;" align="center">
         <strong>{{change_status}}</strong>
     </div>
+    <div class="alert alert-info" id="changeCkey-alert" style="margin-top: 20px;" align="center">
+        <strong>{{changeCkey_status}}</strong>
+    </div>
     <div class="alert alert-info" id="sign-alert" style="margin-top: 20px;" align="center">
         <strong>{{sign_status}}</strong>
+    </div>
+    <div class="alert alert-info" id="sendsecret-alert" style="margin-top: 20px;" align="center">
+        <strong>{{sendsecret_status}}</strong>
+    </div>
+    <div class="alert alert-info" id="getsecret-alert" style="margin-top: 20px;" align="center">
+        <strong>{{getsecret_status}}</strong>
     </div>
 </div>
 
@@ -248,6 +300,24 @@
             <label>Mensaje para firmar:</label>
             <input style="width: 100%;" ng-model="mensaje_to_sign" required>
             <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar para firmar</button>
+        </form>
+        <br>
+        <form ng-submit = "sendSecret()">
+            <label>Secreto:</label>
+            <input style="width: 100%;" ng-model="secret" required>
+            <button style="margin-top: 10px" type="submit" class="btn btn-primary">Enviar secreto</button>
+        </form>
+    </div>
+
+    <div class="container-fluid col-md-6" style="background-color: #d7d7c1; padding: 20px; border-radius: 20px">
+        <form ng-submit = "getSecret()">
+            <label>Secret part 1:</label>
+            <input style="width: 100%;" ng-model="s1" required>
+            <label>Secret part 2:</label>
+            <input style="width: 100%;" ng-model="s2" required>
+            <label>Secret part 3:</label>
+            <input style="width: 100%;" ng-model="s3" required>
+            <button style="margin-top: 10px" type="submit" class="btn btn-primary">Enviar suma</button>
         </form>
     </div>
 
