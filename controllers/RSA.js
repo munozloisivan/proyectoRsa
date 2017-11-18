@@ -1,10 +1,12 @@
 var bigInt = require("big-integer");
+var CryptoJS = require("crypto-js");
 var SHA256 = require("crypto-js/sha256");
 //Generamos todos los valores cuando se arranca el servidor
 var length = 512;
 var id_server = "Servidor";
 var id_client;
 var p, q, n, phiN, e, d;
+var e_client, n_client;
 
 generateKeys();
 
@@ -21,6 +23,13 @@ exports.redoKey = function(req, res) {
     res.status(200).jsonp({'status': "Las claves se han generado de nuevo"});
 };
 
+//POST - Recibir claves del cliente
+exports.webKeys = function(req, res) {
+    console.log('Keys del cliente');
+    console.log(req.body);
+    e_client = req.body.e;
+    n_client = req.body.n;
+}
 
 //POST - Enviar y desencriptar mensaje
 exports.sendMensaje = function(req, res) {
@@ -28,10 +37,16 @@ exports.sendMensaje = function(req, res) {
     console.log(req.body);
     id_client = req.body[0].A;
     var decipher = bigInt(req.body[2].cipher).modPow(d, n);
-    var msghash = req.body[3];
+    //var msghash = req.body[3];
     var msj = decipher.toString(16);
+    var hash = bigInt(req.body[3].Po).modPow(e_client, n_client);
+    var hexahash = hash.toString(16);
     console.log("Descifrado big-integer: " + decipher.toString());
     console.log("Mensaje original: " + hex_to_ascii(msj));
+    console.log("Hash_recibido: " + hexahash);
+    var data = ([{"A": id_client}, {"B": id_server}, {"cipher": req.body[2].cipher}]);
+    var calcpo = CryptoJS.SHA256(JSON.stringify(data)).toString(CryptoJS.enc.Hex);
+    console.log("Hash calculado: " + calcpo);
     res.status(200).jsonp({'status': "Mensaje recibido"});
 };
 

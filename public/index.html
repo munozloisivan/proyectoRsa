@@ -24,12 +24,32 @@
 
             var id_o = "Cliente";
             var id_d;
+            var e;
+            var d;
+            var n;
 
             $http.get("/rsa/pukey").success(function(response) {
                 $scope.expE = response.e;
                 $scope.modN = response.n;
                 id_d = response.id;
             });
+
+            $scope.createKeysweb = function () {
+                generateKeys();
+                console.log("e: " + e);
+                console.log("d: " + d);
+                console.log("n: " + n);
+
+                var keys = ({"e": e , "n": n});
+                var data = JSON.stringify(keys);
+                console.log("data: " + data);
+                $http.post("/rsa/webkeys", data).success(function (response) {
+                        $scope.send_status = response.status;
+                        $("#success-alert").fadeTo(3000, 500).slideUp(500, function(){
+                            $("#success-alert").slideUp(500);
+                        });
+                    })
+            }
 
             $scope.redoKey = function () {
                 $http.get("/rsa/redokey").success(function (response) {
@@ -56,8 +76,12 @@
                 var dataObj = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}]);
 
                 var po = CryptoJS.SHA256(JSON.stringify(dataObj)).toString(CryptoJS.enc.Hex);
-                console.log(po);
-                var enviar = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}, {"Po": po}]);
+                var ponumber = bigInt(po, 16);
+                var posign = bigInt(ponumber).modPow(d, n);
+                console.log("Po: " + po);
+                console.log("Po signed: " + posign);
+                //var enviar = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}, {"Po": po}]);
+                var enviar = ([{"A": id_o}, {"B": id_d}, {"cipher": cipher}, {"Po": posign}]);
 
                 var data = JSON.stringify(enviar);
                     $http.post("/rsa/send", data)
@@ -131,6 +155,35 @@
                 }
                 return b;
             }
+
+            function  generateKeys() {
+                var length = 512;
+                var p = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
+                var q = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
+
+                while (!bigInt(p).isPrime()){
+                    p = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
+                }
+
+                while (!bigInt(q).isPrime()){
+                    q = bigInt.randBetween(bigInt(2).pow((length/2) - 1), bigInt(bigInt(2).pow(length/2)).minus(1));
+                }
+
+                //n = p·q y phiN es (p-1)(q-1)
+                n = bigInt(p).multiply(q);
+                var phiN = bigInt(bigInt(p).prev()).multiply(bigInt(q).prev());
+
+                //Random menor que Phi de N
+                e = bigInt.randBetween((bigInt(2).pow(length/2)), bigInt(phiN));
+
+                //Mientras e no sea primo y coprimo de phiN lo volvemos a generar
+                while ((!bigInt(e).isPrime())&&(bigInt.lcm(e, phiN) != 1)){
+                    e = bigInt.randBetween((bigInt(2).pow(length/2)), bigInt(phiN));
+                }
+
+                //d (exponente privado) tiene que ser el multiplicador inverso de e mod phiN
+                d = bigInt(e).modInv(phiN);
+            }
         });
 
     </script>
@@ -145,6 +198,10 @@
 
     <div style="text-align: center">
         <button type="button" class="btn btn-danger" ng-click = "redoKey()">Restaurar claves</button>
+    </div>
+
+    <div style="text-align: center">
+        <button type="button" class="btn btn-danger" ng-click = "createKeysweb()">Crear claves Web</button>
     </div>
 
     <div class="alert alert-success" id="success-alert" style="margin-top: 20px;" align="center">
