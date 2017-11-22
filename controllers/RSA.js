@@ -31,7 +31,7 @@ exports.webKeys = function(req, res) {
     console.log(req.body);
     e_client = req.body.e;
     n_client = req.body.n;
-    res.status(200).jsonp({'status': "Las claves del cliente se han generado y enviado de nuevo"});
+    res.status(200).jsonp({'status': "Las claves del cliente se han generado y enviado al servidor"});
 }
 
 //POST - Recibir secreto

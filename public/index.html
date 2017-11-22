@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>RSA</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
     <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
     <script src="/crypto-js/crypto-js.js"></script>
     <script src="/secrets-js/secrets.js"></script>
     <script>
-
 
         $(document).ready (function(){
             $("#success-alert").hide();
@@ -20,6 +22,7 @@
             $("#sendsecret-alert").hide();
             $("#getsecret-alert").hide();
             $("#changeCkey-alert").hide();
+
         });
 
         var app = angular.module('RSA', []);
@@ -31,6 +34,10 @@
             var e;
             var d;
             var n;
+
+            angular.element(document).ready(function () {
+                generateKeys();
+            });
 
             $http.get("/rsa/pukey").success(function(response) {
                 $scope.expE = response.e;
@@ -73,23 +80,6 @@
                         $scope.getsecret_status = response.status;
                         $("#getsecret-alert").fadeTo(3000, 500).slideUp(500, function(){
                             $("#getsecret-alert").slideUp(500);
-                        });
-                    })
-            }
-
-            $scope.createKeysweb = function () {
-                generateKeys();
-                console.log("e: " + e);
-                console.log("d: " + d);
-                console.log("n: " + n);
-
-                var keys = ({"e": e , "n": n});
-                var data = JSON.stringify(keys);
-                console.log("data: " + data);
-                $http.post("/rsa/webkeys", data).success(function (response) {
-                        $scope.changeCkey_status = response.status;
-                        $("#changeCkey-alert").fadeTo(3000, 500).slideUp(500, function(){
-                            $("#changeCkey-alert").slideUp(500);
                         });
                     })
             }
@@ -246,6 +236,20 @@
 
                 //d (exponente privado) tiene que ser el multiplicador inverso de e mod phiN
                 d = bigInt(e).modInv(phiN);
+
+                console.log("e: " + e);
+                console.log("d: " + d);
+                console.log("n: " + n);
+
+                var keys = ({"e": e , "n": n});
+                var data = JSON.stringify(keys);
+                console.log("data: " + data);
+                $http.post("/rsa/webkeys", data).success(function (response) {
+                    $scope.changeCkey_status = response.status;
+                    $("#changeCkey-alert").fadeTo(3000, 500).slideUp(500, function(){
+                        $("#changeCkey-alert").slideUp(500);
+                    });
+                })
             }
         });
 
@@ -257,97 +261,136 @@
 
 <div class="container-fluid">
     <div class="row">
-    <div class="col-md-12">
-        <div class="well" style="height: auto; border-color: #929292 !important;">
-            <h4 align="center">Exponente público (e)</h4><p style="font-size: 11px; font-family: Consolas" align="center">{{ expE }}</p>
-            <h4 align="center">Módulo (n)</h4><p style="font-size: 11px; font-family: Consolas" align="center">{{ modN }}</p>
-
-            <div style="text-align: center">
-                <button type="button" class="btn btn-danger" ng-click = "redoKey()">Restaurar claves</button>
-            </div>
-            <br>
-            <div style="text-align: center">
-                <button type="button" class="btn btn-danger" ng-click = "createKeysweb()">Crear claves Web</button>
-            </div>
-
-            <div class="alert alert-success" id="success-alert" style="margin-top: 20px;" align="center">
-                <strong>{{send_status}}</strong>
-            </div>
-            <div class="alert alert-info" id="changekey-alert" style="margin-top: 20px;" align="center">
-                <strong>{{change_status}}</strong>
-            </div>
-            <div class="alert alert-info" id="changeCkey-alert" style="margin-top: 20px;" align="center">
-                <strong>{{changeCkey_status}}</strong>
-            </div>
-            <div class="alert alert-info" id="sign-alert" style="margin-top: 20px;" align="center">
-                <strong>{{sign_status}}</strong>
-            </div>
-            <div class="alert alert-info" id="sendsecret-alert" style="margin-top: 20px;" align="center">
-                <strong>{{sendsecret_status}}</strong>
-            </div>
-            <div class="alert alert-info" id="getsecret-alert" style="margin-top: 20px;" align="center">
-                <strong>{{getsecret_status}}</strong>
-            </div>
-        </div>
-    </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-6">
-            <div class="well" style="height: auto; border-color: #929292 !important;">
-                <form ng-submit = "send()">
-                    <label>Mensaje para descifrar:</label>
-                    <input style="width: 100%;" ng-model="mensaje" required>
-                    <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar al servidor</button>
-                </form>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="well" style="height: auto; border-color: #929292 !important;">
-                <form ng-submit = "sendToSign()">
-                    <label>Mensaje para firmar:</label>
-                    <input style="width: 100%;" ng-model="mensaje_to_sign" required>
-                    <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar para firmar</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
         <div class="col-md-12">
             <div class="well" style="height: auto; border-color: #929292 !important;">
-                <h5>Mensaje firmado cegado:</h5>
-                <p style="font-size: 15px; font-family: Consolas" align="center">{{ signed_msg_blind }}</p>
-                <h5>Mensaje firmado:</h5>
-                <p style="font-size: 15px; font-family: Consolas" align="center">{{ signed_msg }}</p>
+                <h4 align="center">Exponente público</h4><p style="font-size: 11px; font-family: Consolas" align="center">{{ expE }}</p>
+                <h4 align="center">Módulo</h4><p style="font-size: 11px; font-family: Consolas" align="center">{{ modN }}</p>
+
+                <div style="text-align: center">
+                    <button type="button" class="btn btn-danger" ng-click = "redoKey()">Restaurar claves</button>
+                </div>
+                <br>
+
+                <div class="alert alert-success" id="success-alert" style="margin-top: 20px;" align="center">
+                    <strong>{{send_status}}</strong>
+                </div>
+                <div class="alert alert-info" id="changekey-alert" style="margin-top: 20px;" align="center">
+                    <strong>{{change_status}}</strong>
+                </div>
+                <div class="alert alert-info" id="changeCkey-alert" style="margin-top: 20px;" align="center">
+                    <strong>{{changeCkey_status}}</strong>
+                </div>
+                <div class="alert alert-info" id="sign-alert" style="margin-top: 20px;" align="center">
+                    <strong>{{sign_status}}</strong>
+                </div>
+                <div class="alert alert-info" id="sendsecret-alert" style="margin-top: 20px;" align="center">
+                    <strong>{{sendsecret_status}}</strong>
+                </div>
+                <div class="alert alert-info" id="getsecret-alert" style="margin-top: 20px;" align="center">
+                    <strong>{{getsecret_status}}</strong>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="well" style="height: auto; border-color: #929292 !important;">
-                <form ng-submit = "sendSecret()">
-                    <label>Secreto:</label>
-                    <input style="width: 100%;" ng-model="secret" required>
-                    <button style="margin-top: 10px" type="submit" class="btn btn-primary">Enviar secreto</button>
-                </form>
+    <ul class="nav nav-tabs nav-justified">
+        <li class="active"><a data-toggle="pill" href="#fc" style="color: black"><strong>Firma ciega</strong></a></li>
+        <li><a data-toggle="pill" href="#nr" style="color: black"><strong>No repudio</strong></a></li>
+        <li><a data-toggle="pill" href="#sc" style="color: black"><strong>Secreto compartido</strong></a></li>
+        <li><a data-toggle="pill" href="#ch" style="color: black"><strong>Criptografía homomorfica</strong></a></li>
+    </ul>
+
+    <div class="tab-content" style="padding-top: 10px; background-color: white">
+        <div id="fc" class="tab-pane fade in active">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="well" style="height: auto; border-color: #929292 !important;">
+                            <form ng-submit = "sendToSign()">
+                                <label>Mensaje para firmar:</label>
+                                <input style="width: 100%;" ng-model="mensaje_to_sign" required>
+                                <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar para firmar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="well" style="height: auto; border-color: #929292 !important;">
+                            <h5>Mensaje firmado cegado:</h5>
+                            <p style="font-size: 11px; font-family: Consolas" align="center">{{ signed_msg_blind }}</p>
+                            <h5>Mensaje firmado:</h5>
+                            <p style="font-size: 11px; font-family: Consolas" align="center">{{ signed_msg }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="well" style="height: auto; border-color: #929292 !important;">
-                <form ng-submit = "getSecret()">
-                    <label>Secret part 1:</label>
-                    <input style="width: 100%;" ng-model="s1" required>
-                    <label>Secret part 2:</label>
-                    <input style="width: 100%;" ng-model="s2" required>
-                    <label>Secret part 3:</label>
-                    <input style="width: 100%;" ng-model="s3" required>
-                    <button style="margin-top: 10px" type="submit" class="btn btn-primary">Enviar suma</button>
-                </form>
+        <div id="nr" class="tab-pane fade">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="well" style="height: auto; border-color: #929292 !important;">
+                            <form ng-submit = "send()">
+                                <label>Mensaje para descifrar:</label>
+                                <input style="width: 100%;" ng-model="mensaje" required>
+                                <button style="margin-top: 10px" type="submit" class="btn btn-primary">Envíar al servidor</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="sc" class="tab-pane fade">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="well" style="height: auto; border-color: #929292 !important;">
+                            <form ng-submit = "sendSecret()">
+                                <label>Secreto:</label>
+                                <input style="width: 100%;" ng-model="secret" required>
+                                <button style="margin-top: 10px" type="submit" class="btn btn-primary">Enviar secreto</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="well" style="height: auto; border-color: #929292 !important;">
+                            <form ng-submit = "getSecret()">
+                                <label>Secret part 1:</label>
+                                <input style="width: 100%;" ng-model="s1" required>
+                                <label>Secret part 2:</label>
+                                <input style="width: 100%;" ng-model="s2" required>
+                                <label>Secret part 3:</label>
+                                <input style="width: 100%;" ng-model="s3" required>
+                                <button style="margin-top: 10px" type="submit" class="btn btn-primary">Comprobar secreto</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ch" class="tab-pane fade">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6 col-md-offset-3">
+                        <div class="well" style="height: auto; border-color: #929292 !important;">
+                            <h3 class="text-center">Próximamente</h3>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+
+
+
 
     <!--<div class="container-fluid col-md-6" style="background-color: #d7d7c1; padding: 20px; border-radius: 20px">
         <form ng-submit = "sendSuma()">
