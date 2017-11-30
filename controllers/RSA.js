@@ -64,7 +64,6 @@ exports.sendSecret = function(req, res) {
     console.log('Asciicomb: ' + hex_to_ascii(comb));
     console.log('Secret: ' + secret);
     console.log( comb === secret  ); // => true*/
-
 }
 
 //POST - Comprobar secreto
@@ -92,7 +91,6 @@ exports.getSecret = function(req, res) {
     else {
         res.status(200).jsonp({'status': "Claves secretas incorrectas"});
     }
-
 }
 
 //POST - Enviar y desencriptar mensaje
