@@ -128,7 +128,7 @@
 
             $scope.sendToSign = function () {
                 console.log("FIRMAR");
-                var length = 512;
+                var length = 512;   //variable static
                 console.log("Mensaje: " + $scope.mensaje_to_sign);
                 var b = createBlinder(length);
                 var blinder_factor = bigInt(b).modPow($scope.expE, $scope.modN);
@@ -139,7 +139,7 @@
                 console.log("Hexadecimal: " + input);
                 var bnumber = bigInt(input, 16);
                 console.log("Big-int del hexadecimal: " + bnumber);
-                var blinded = ((bigInt(bnumber).multiply(blinder_factor)).mod($scope.modN)).toString();
+                var blinded = ((bnumber.multiply(blinder_factor)).mod($scope.modN)).toString();
                 console.log("Blinded: " + blinded);
                 var dataObj = ([{"A": id_o}, {"B": id_d}, {"blinded": blinded}]);
                 var data = JSON.stringify(dataObj);
@@ -155,8 +155,8 @@
                             var signed_final = (bigInt(signed_final_blind).multiply(b_inv)).mod($scope.modN);
                             console.log("Firmado: " + signed_final.toString());
                             $scope.signed_msg = signed_final.toString();
-                            var probe_hexa = bigInt(signed_final).modPow($scope.expE, $scope.modN);
-                            var probe = hex_to_ascii(probe_hexa.toString(16));
+                            var probe_hexa = bigInt(signed_final).modPow($scope.expE, $scope.modN); //cambiar nombres variables
+                            var probe = hex_to_ascii(probe_hexa.toString(16));  //cambiar nombres variables
                             console.log(response);
                             console.log("Comprobación: " + probe);
                         })
@@ -200,7 +200,7 @@
                 return str;
             }
 
-            function createBlinder(length){
+            function createBlinder(length){ //cambiar length
                 //Factor de cegado
                 var b = bigInt.randBetween((bigInt(2).pow(length/2)), bigInt($scope.modN));
                 while ((!bigInt(b).isPrime())&&(bigInt.lcm(b, $scope.modN) != 1)){

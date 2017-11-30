@@ -43,13 +43,17 @@ exports.sendSecret = function(req, res) {
     secret = decipher.toString(16);
     console.log("Mensaje original: " + hex_to_ascii(secret));
 
-    var shares = secrets.share(secret, 3, 3, 16);
+    var shares = secrets.share(secret, 5, 3, 16);
     s1 = shares[0];
     s2 = shares[1];
     s3 = shares[2];
+    s4 = shares[3];
+    s5 = shares[4];
     console.log('Secret_1: ' + s1);
     console.log('Secret_2: ' + s2);
     console.log('Secret_3: ' + s3);
+    console.log('Secret_4: ' + s4);
+    console.log('Secret_5: ' + s5);
 
     res.status(200).jsonp({'status': "Secreto guardado. Su clave es: " + s1});
 
